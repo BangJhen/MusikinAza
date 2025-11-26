@@ -145,7 +145,3 @@ musikinAza/
 - "Memutar lagu" ditampilkan sebagai notifikasi teks
 - Data lagu tidak persisten (hilang saat aplikasi ditutup)
 - Maksimal 10 playlist dapat dibuat
-
-## Pengembang
-
-Tugas Besar Struktur Data - Semester Ganjil 2025
