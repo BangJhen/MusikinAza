@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void menuAdmin(Library &L, Playlist playlists[], int &playlistCount) {
+void menuAdmin(Library &L, Playlist playlists[], int &playlistCount, ArtistList &AL) {
     int pilihan;
     do {
         cout << "\n=== MENU ADMIN ===" << endl;
@@ -33,6 +33,8 @@ void menuAdmin(Library &L, Playlist playlists[], int &playlistCount) {
                 getline(cin, s.judul);
                 cout << "Masukkan Artis: ";
                 getline(cin, s.artis);
+                cout << "Masukkan Album: ";
+                getline(cin, s.album);
                 cout << "Masukkan Genre: ";
                 getline(cin, s.genre);
                 cout << "Masukkan Tahun: ";
@@ -41,6 +43,7 @@ void menuAdmin(Library &L, Playlist playlists[], int &playlistCount) {
                     throw runtime_error("Tahun harus angka");
                 }
                 addSong(L, s);
+                addSongToArtist(AL, s);
             } else if (pilihan == 2) {
                 showAllSongs(L);
             } else if (pilihan == 3) {
@@ -94,7 +97,7 @@ void menuAdmin(Library &L, Playlist playlists[], int &playlistCount) {
     } while (pilihan != 0);
 }
 
-void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay &cp) {
+void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay &cp, PlayQueue &Q, History &H, ArtistList &AL) {
     int pilihan;
     do {
         cout << "\n=== MENU USER ===" << endl;
@@ -104,7 +107,10 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
         cout << "4. Next Lagu" << endl;
         cout << "5. Prev Lagu" << endl;
         cout << "6. Kelola Playlist" << endl;
-        cout << "7. Lihat Semua Lagu" << endl;
+        cout << "7. Antrian Pemutaran" << endl;
+        cout << "8. Riwayat Pemutaran" << endl;
+        cout << "9. Browse by Artis" << endl;
+        cout << "10. Lihat Semua Lagu" << endl;
         cout << "0. Kembali" << endl;
         cout << "Pilihan: ";
         
@@ -124,12 +130,21 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                     throw runtime_error("ID harus angka");
                 }
                 playSong(L, cp, id);
+                if (cp.isPlaying) {
+                    pushHistory(H, cp.info);
+                }
             } else if (pilihan == 3) {
                 stopSong(cp);
             } else if (pilihan == 4) {
                 nextSong(L, cp);
+                if (cp.isPlaying) {
+                    pushHistory(H, cp.info);
+                }
             } else if (pilihan == 5) {
                 prevSong(L, cp);
+                if (cp.isPlaying) {
+                    pushHistory(H, cp.info);
+                }
             } else if (pilihan == 6) {
                 int pilihanPlaylist;
                 do {
@@ -264,6 +279,151 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                     }
                 } while (pilihanPlaylist != 0);
             } else if (pilihan == 7) {
+                int pilihanQueue;
+                do {
+                    cout << "\n=== ANTRIAN PEMUTARAN ===" << endl;
+                    cout << "1. Tambah Lagu ke Antrian" << endl;
+                    cout << "2. Lihat Antrian" << endl;
+                    cout << "3. Putar dari Antrian" << endl;
+                    cout << "0. Kembali" << endl;
+                    cout << "Pilihan: ";
+                    
+                    try {
+                        cin >> pilihanQueue;
+                        if (cin.fail()) {
+                            throw runtime_error("Input tidak valid");
+                        }
+                        
+                        if (pilihanQueue == 1) {
+                            int id;
+                            cout << "Masukkan ID lagu: ";
+                            cin >> id;
+                            if (cin.fail()) {
+                                throw runtime_error("ID harus angka");
+                            }
+                            Song* s = findSongById(L, id);
+                            if (s != nullptr) {
+                                enqueueSong(Q, *s);
+                            } else {
+                                cout << "Lagu tidak ditemukan." << endl;
+                            }
+                        } else if (pilihanQueue == 2) {
+                            showQueue(Q);
+                        } else if (pilihanQueue == 3) {
+                            if (!isQueueEmpty(Q)) {
+                                Song s;
+                                dequeueSong(Q, s);
+                                cp.info = s;
+                                cp.isPlaying = true;
+                                cp.fromPlaylist = false;
+                                cp.currentPlaylistNode = nullptr;
+                                pushHistory(H, s);
+                                cout << "\nSekarang memutar dari antrian: " << s.judul << " - " << s.artis << endl;
+                            } else {
+                                cout << "Antrian kosong." << endl;
+                            }
+                        }
+                    } catch (exception &e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                        pilihanQueue = -1;
+                    }
+                } while (pilihanQueue != 0);
+            } else if (pilihan == 8) {
+                int pilihanHistory;
+                do {
+                    cout << "\n=== RIWAYAT PEMUTARAN ===" << endl;
+                    cout << "1. Lihat Riwayat" << endl;
+                    cout << "2. Putar dari Riwayat" << endl;
+                    cout << "0. Kembali" << endl;
+                    cout << "Pilihan: ";
+                    
+                    try {
+                        cin >> pilihanHistory;
+                        if (cin.fail()) {
+                            throw runtime_error("Input tidak valid");
+                        }
+                        
+                        if (pilihanHistory == 1) {
+                            showHistory(H);
+                        } else if (pilihanHistory == 2) {
+                            if (!isHistoryEmpty(H)) {
+                                showHistory(H);
+                                int no;
+                                cout << "Pilih nomor lagu: ";
+                                cin >> no;
+                                if (cin.fail()) {
+                                    throw runtime_error("Input harus angka");
+                                }
+                                
+                                addressHistory p = H.top;
+                                int count = 1;
+                                while (p != nullptr && count < no) {
+                                    p = p->next;
+                                    count++;
+                                }
+                                
+                                if (p != nullptr) {
+                                    cp.info = p->info;
+                                    cp.isPlaying = true;
+                                    cp.fromPlaylist = false;
+                                    cp.currentPlaylistNode = nullptr;
+                                    cout << "\nSekarang memutar: " << p->info.judul << " - " << p->info.artis << endl;
+                                } else {
+                                    cout << "Nomor tidak valid." << endl;
+                                }
+                            } else {
+                                cout << "Riwayat kosong." << endl;
+                            }
+                        }
+                    } catch (exception &e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                        pilihanHistory = -1;
+                    }
+                } while (pilihanHistory != 0);
+            } else if (pilihan == 9) {
+                int pilihanArtist;
+                do {
+                    cout << "\n=== BROWSE BY ARTIS ===" << endl;
+                    cout << "1. Lihat Semua Artis" << endl;
+                    cout << "2. Lihat Album Artis" << endl;
+                    cout << "3. Lihat Lagu di Album" << endl;
+                    cout << "0. Kembali" << endl;
+                    cout << "Pilihan: ";
+                    
+                    try {
+                        cin >> pilihanArtist;
+                        if (cin.fail()) {
+                            throw runtime_error("Input tidak valid");
+                        }
+                        cin.ignore();
+                        
+                        if (pilihanArtist == 1) {
+                            showAllArtists(AL);
+                        } else if (pilihanArtist == 2) {
+                            string namaArtis;
+                            cout << "Nama artis: ";
+                            getline(cin, namaArtis);
+                            showArtistAlbums(AL, namaArtis);
+                        } else if (pilihanArtist == 3) {
+                            string namaArtis, namaAlbum;
+                            cout << "Nama artis: ";
+                            getline(cin, namaArtis);
+                            cout << "Nama album: ";
+                            getline(cin, namaAlbum);
+                            showAlbumSongs(AL, namaArtis, namaAlbum);
+                        }
+                    } catch (exception &e) {
+                        cout << "Error: " << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                        pilihanArtist = -1;
+                    }
+                } while (pilihanArtist != 0);
+            } else if (pilihan == 10) {
                 showAllSongs(L);
             }
         } catch (exception &e) {
@@ -280,11 +440,18 @@ int main() {
     Playlist playlists[10];
     int playlistCount = 0;
     CurrentPlay currentPlay;
+    PlayQueue playQueue;
+    History history;
+    ArtistList artistList;
+    
     currentPlay.isPlaying = false;
     currentPlay.fromPlaylist = false;
     currentPlay.currentPlaylistNode = nullptr;
     
     createLibrary(library);
+    createQueue(playQueue);
+    createHistory(history);
+    createArtistList(artistList);
     
     int pilihan;
     do {
@@ -304,9 +471,9 @@ int main() {
             }
             
             if (pilihan == 1) {
-                menuAdmin(library, playlists, playlistCount);
+                menuAdmin(library, playlists, playlistCount, artistList);
             } else if (pilihan == 2) {
-                menuUser(library, playlists, playlistCount, currentPlay);
+                menuUser(library, playlists, playlistCount, currentPlay, playQueue, history, artistList);
             }
         } catch (exception &e) {
             cout << "Error: " << e.what() << endl;

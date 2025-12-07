@@ -52,6 +52,7 @@ void showAllSongs(Library L) {
         cout << "ID: " << p->info.id << endl;
         cout << "Judul: " << p->info.judul << endl;
         cout << "Artis: " << p->info.artis << endl;
+        cout << "Album: " << p->info.album << endl;
         cout << "Genre: " << p->info.genre << endl;
         cout << "Tahun: " << p->info.tahun << endl;
         cout << "-------------------" << endl;
@@ -153,6 +154,7 @@ void searchSong(Library L) {
                     cout << "ID: " << p->info.id << endl;
                     cout << "Judul: " << p->info.judul << endl;
                     cout << "Artis: " << p->info.artis << endl;
+                    cout << "Album: " << p->info.album << endl;
                     cout << "Genre: " << p->info.genre << endl;
                     cout << "Tahun: " << p->info.tahun << endl;
                     found = true;
@@ -170,6 +172,7 @@ void searchSong(Library L) {
                     cout << "ID: " << p->info.id << endl;
                     cout << "Judul: " << p->info.judul << endl;
                     cout << "Artis: " << p->info.artis << endl;
+                    cout << "Album: " << p->info.album << endl;
                     cout << "Genre: " << p->info.genre << endl;
                     cout << "Tahun: " << p->info.tahun << endl;
                     cout << "-------------------" << endl;
@@ -187,6 +190,7 @@ void searchSong(Library L) {
                     cout << "ID: " << p->info.id << endl;
                     cout << "Judul: " << p->info.judul << endl;
                     cout << "Artis: " << p->info.artis << endl;
+                    cout << "Album: " << p->info.album << endl;
                     cout << "Genre: " << p->info.genre << endl;
                     cout << "Tahun: " << p->info.tahun << endl;
                     cout << "-------------------" << endl;
@@ -417,5 +421,226 @@ void deleteSongFromPlaylist(Playlist &P, int id) {
         }
         prev = p;
         p = p->next;
+    }
+}
+
+void createQueue(PlayQueue &Q) {
+    Q.head = nullptr;
+    Q.tail = nullptr;
+}
+
+void enqueueSong(PlayQueue &Q, Song s) {
+    addressQueue p = new NodeQueue;
+    p->info = s;
+    p->next = nullptr;
+    
+    if (Q.head == nullptr) {
+        Q.head = p;
+        Q.tail = p;
+    } else {
+        Q.tail->next = p;
+        Q.tail = p;
+    }
+    cout << "Lagu ditambahkan ke antrian!" << endl;
+}
+
+void dequeueSong(PlayQueue &Q, Song &s) {
+    if (Q.head != nullptr) {
+        addressQueue p = Q.head;
+        s = p->info;
+        Q.head = p->next;
+        if (Q.head == nullptr) {
+            Q.tail = nullptr;
+        }
+        delete p;
+    }
+}
+
+void showQueue(PlayQueue Q) {
+    if (Q.head == nullptr) {
+        cout << "Antrian kosong." << endl;
+        return;
+    }
+    
+    addressQueue p = Q.head;
+    int no = 1;
+    cout << "\n=== ANTRIAN PEMUTARAN ===" << endl;
+    while (p != nullptr) {
+        cout << no++ << ". " << p->info.judul << " - " << p->info.artis << endl;
+        p = p->next;
+    }
+}
+
+bool isQueueEmpty(PlayQueue Q) {
+    return Q.head == nullptr;
+}
+
+void createHistory(History &H) {
+    H.top = nullptr;
+}
+
+void pushHistory(History &H, Song s) {
+    addressHistory p = new NodeHistory;
+    p->info = s;
+    p->next = H.top;
+    H.top = p;
+}
+
+void popHistory(History &H, Song &s) {
+    if (H.top != nullptr) {
+        addressHistory p = H.top;
+        s = p->info;
+        H.top = p->next;
+        delete p;
+    }
+}
+
+void showHistory(History H) {
+    if (H.top == nullptr) {
+        cout << "Riwayat kosong." << endl;
+        return;
+    }
+    
+    addressHistory p = H.top;
+    int no = 1;
+    cout << "\n=== RIWAYAT PEMUTARAN ===" << endl;
+    while (p != nullptr && no <= 10) {
+        cout << no++ << ". " << p->info.judul << " - " << p->info.artis << endl;
+        p = p->next;
+    }
+}
+
+bool isHistoryEmpty(History H) {
+    return H.top == nullptr;
+}
+
+void createArtistList(ArtistList &AL) {
+    AL.head = nullptr;
+}
+
+void addSongToArtist(ArtistList &AL, Song s) {
+    addressArtist currArtist = AL.head;
+    addressArtist prevArtist = nullptr;
+    
+    while (currArtist != nullptr && currArtist->namaArtis != s.artis) {
+        prevArtist = currArtist;
+        currArtist = currArtist->next;
+    }
+    
+    if (currArtist == nullptr) {
+        currArtist = new NodeArtist;
+        currArtist->namaArtis = s.artis;
+        currArtist->albums = nullptr;
+        currArtist->next = nullptr;
+        
+        if (AL.head == nullptr) {
+            AL.head = currArtist;
+        } else {
+            prevArtist->next = currArtist;
+        }
+    }
+    
+    addressAlbum currAlbum = currArtist->albums;
+    addressAlbum prevAlbum = nullptr;
+    
+    while (currAlbum != nullptr && currAlbum->namaAlbum != s.album) {
+        prevAlbum = currAlbum;
+        currAlbum = currAlbum->next;
+    }
+    
+    if (currAlbum == nullptr) {
+        currAlbum = new NodeAlbum;
+        currAlbum->namaAlbum = s.album;
+        currAlbum->songs = nullptr;
+        currAlbum->next = nullptr;
+        
+        if (currArtist->albums == nullptr) {
+            currArtist->albums = currAlbum;
+        } else {
+            prevAlbum->next = currAlbum;
+        }
+    }
+    
+    addressLibrary newSong = new NodeLibrary;
+    newSong->info = s;
+    newSong->next = currAlbum->songs;
+    newSong->prev = nullptr;
+    if (currAlbum->songs != nullptr) {
+        currAlbum->songs->prev = newSong;
+    }
+    currAlbum->songs = newSong;
+}
+
+void showAllArtists(ArtistList AL) {
+    if (AL.head == nullptr) {
+        cout << "Belum ada artis." << endl;
+        return;
+    }
+    
+    addressArtist p = AL.head;
+    cout << "\n=== DAFTAR ARTIS ===" << endl;
+    while (p != nullptr) {
+        cout << "- " << p->namaArtis << endl;
+        p = p->next;
+    }
+}
+
+void showArtistAlbums(ArtistList AL, string namaArtis) {
+    addressArtist p = AL.head;
+    
+    while (p != nullptr && p->namaArtis != namaArtis) {
+        p = p->next;
+    }
+    
+    if (p == nullptr) {
+        cout << "Artis tidak ditemukan." << endl;
+        return;
+    }
+    
+    if (p->albums == nullptr) {
+        cout << "Artis belum memiliki album." << endl;
+        return;
+    }
+    
+    addressAlbum album = p->albums;
+    cout << "\n=== ALBUM " << namaArtis << " ===" << endl;
+    while (album != nullptr) {
+        cout << "- " << album->namaAlbum << endl;
+        album = album->next;
+    }
+}
+
+void showAlbumSongs(ArtistList AL, string namaArtis, string namaAlbum) {
+    addressArtist artist = AL.head;
+    
+    while (artist != nullptr && artist->namaArtis != namaArtis) {
+        artist = artist->next;
+    }
+    
+    if (artist == nullptr) {
+        cout << "Artis tidak ditemukan." << endl;
+        return;
+    }
+    
+    addressAlbum album = artist->albums;
+    while (album != nullptr && album->namaAlbum != namaAlbum) {
+        album = album->next;
+    }
+    
+    if (album == nullptr) {
+        cout << "Album tidak ditemukan." << endl;
+        return;
+    }
+    
+    if (album->songs == nullptr) {
+        cout << "Album belum memiliki lagu." << endl;
+        return;
+    }
+    
+    addressLibrary song = album->songs;
+    cout << "\n=== LAGU DI ALBUM " << namaAlbum << " ===" << endl;
+    while (song != nullptr) {
+        cout << "ID: " << song->info.id << " - " << song->info.judul << endl;
+        song = song->next;
     }
 }
