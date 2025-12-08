@@ -127,10 +127,33 @@ Aplikasi dilengkapi dengan exception handling untuk validasi input:
 musikinAza/
 ├── musikinAza/
 │   ├── main.cpp          # Program utama dan menu
-│   ├── musikinAza.h      # Header file dengan deklarasi
-│   └── musikinAza.cpp    # Implementasi fungsi
+│   ├── musikinAza.h      # Header utama (include semua modul)
+│   ├── musikinAza.cpp    # Implementasi semua fungsi
+│   ├── song.h            # Modul: Struct Song
+│   ├── library.h         # Modul: Doubly Linked List (Library)
+│   ├── playlist.h        # Modul: Singly Linked List (Playlist)
+│   ├── player.h          # Modul: Fungsi pemutaran
+│   ├── queue.h           # Modul: Queue (Antrian)
+│   ├── history.h         # Modul: Stack (Riwayat)
+│   └── artist.h          # Modul: Multi Linked List (Artis-Album)
 └── README.md
 ```
+
+### Penjelasan Modul
+
+**song.h**: Definisi struct `Song` yang menyimpan data lagu (id, judul, artis, album, genre, tahun)
+
+**library.h**: Implementasi Doubly Linked List untuk library lagu dengan fungsi CRUD
+
+**playlist.h**: Implementasi Singly Linked List untuk playlist dan struct `CurrentPlay`
+
+**player.h**: Fungsi-fungsi untuk memutar, stop, next, dan prev lagu
+
+**queue.h**: Implementasi Queue (FIFO) untuk antrian pemutaran
+
+**history.h**: Implementasi Stack (LIFO) untuk riwayat pemutaran
+
+**artist.h**: Implementasi Multi Linked List untuk organisasi Artis → Album → Lagu
 
 ## Teknologi
 

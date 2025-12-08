@@ -316,7 +316,7 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                                 cp.info = s;
                                 cp.isPlaying = true;
                                 cp.fromPlaylist = false;
-                                cp.currentPlaylistNode = nullptr;
+                                cp.currentPlaylistelm = nullptr;
                                 pushHistory(H, s);
                                 cout << "\nSekarang memutar dari antrian: " << s.judul << " - " << s.artis << endl;
                             } else {
@@ -368,7 +368,7 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                                     cp.info = p->info;
                                     cp.isPlaying = true;
                                     cp.fromPlaylist = false;
-                                    cp.currentPlaylistNode = nullptr;
+                                    cp.currentPlaylistelm = nullptr;
                                     cout << "\nSekarang memutar: " << p->info.judul << " - " << p->info.artis << endl;
                                 } else {
                                     cout << "Nomor tidak valid." << endl;
@@ -446,7 +446,7 @@ int main() {
     
     currentPlay.isPlaying = false;
     currentPlay.fromPlaylist = false;
-    currentPlay.currentPlaylistNode = nullptr;
+    currentPlay.currentPlaylistelm = nullptr;
     
     createLibrary(library);
     createQueue(playQueue);

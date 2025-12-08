@@ -12,7 +12,7 @@ void createPlaylist(Playlist &P, string nama) {
 }
 
 addressLibrary allocateLibrary(Song s) {
-    addressLibrary p = new NodeLibrary;
+    addressLibrary p = new elmLibrary;
     p->info = s;
     p->next = nullptr;
     p->prev = nullptr;
@@ -20,7 +20,7 @@ addressLibrary allocateLibrary(Song s) {
 }
 
 addressPlaylist allocatePlaylist(Song s) {
-    addressPlaylist p = new NodePlaylist;
+    addressPlaylist p = new elmPlaylist;
     p->info = s;
     p->next = nullptr;
     return p;
@@ -216,7 +216,7 @@ void playSong(Library L, CurrentPlay &cp, int id) {
         cp.info = *s;
         cp.isPlaying = true;
         cp.fromPlaylist = false;
-        cp.currentPlaylistNode = nullptr;
+        cp.currentPlaylistelm = nullptr;
         cout << "\nSekarang memutar: " << s->judul << " - " << s->artis << endl;
     } else {
         cout << "Lagu tidak ditemukan." << endl;
@@ -263,10 +263,10 @@ void nextSong(Library L, CurrentPlay &cp) {
         return;
     }
     
-    if (cp.fromPlaylist && cp.currentPlaylistNode != nullptr) {
-        if (cp.currentPlaylistNode->next != nullptr) {
-            cp.currentPlaylistNode = cp.currentPlaylistNode->next;
-            cp.info = cp.currentPlaylistNode->info;
+    if (cp.fromPlaylist && cp.currentPlaylistelm != nullptr) {
+        if (cp.currentPlaylistelm->next != nullptr) {
+            cp.currentPlaylistelm = cp.currentPlaylistelm->next;
+            cp.info = cp.currentPlaylistelm->info;
             cout << "\nNext: " << cp.info.judul << " - " << cp.info.artis << endl;
         } else {
             cout << "Sudah di akhir playlist." << endl;
@@ -288,7 +288,7 @@ void prevSong(Library L, CurrentPlay &cp) {
         return;
     }
     
-    if (cp.fromPlaylist && cp.currentPlaylistNode != nullptr) {
+    if (cp.fromPlaylist && cp.currentPlaylistelm != nullptr) {
         cout << "Fitur prev di playlist tidak tersedia (singly linked list)." << endl;
     } else {
         Song* similar = findSimilarSong(L, cp.info);
@@ -372,7 +372,7 @@ void playFromPlaylist(Playlist P, CurrentPlay &cp, int id) {
             cp.info = p->info;
             cp.isPlaying = true;
             cp.fromPlaylist = true;
-            cp.currentPlaylistNode = p;
+            cp.currentPlaylistelm = p;
             cout << "\nSekarang memutar dari playlist: " << p->info.judul << " - " << p->info.artis << endl;
             return;
         }
@@ -430,7 +430,7 @@ void createQueue(PlayQueue &Q) {
 }
 
 void enqueueSong(PlayQueue &Q, Song s) {
-    addressQueue p = new NodeQueue;
+    addressQueue p = new elmQueue;
     p->info = s;
     p->next = nullptr;
     
@@ -480,7 +480,7 @@ void createHistory(History &H) {
 }
 
 void pushHistory(History &H, Song s) {
-    addressHistory p = new NodeHistory;
+    addressHistory p = new elmHistory;
     p->info = s;
     p->next = H.top;
     H.top = p;
@@ -528,7 +528,7 @@ void addSongToArtist(ArtistList &AL, Song s) {
     }
     
     if (currArtist == nullptr) {
-        currArtist = new NodeArtist;
+        currArtist = new elmArtist;
         currArtist->namaArtis = s.artis;
         currArtist->albums = nullptr;
         currArtist->next = nullptr;
@@ -549,7 +549,7 @@ void addSongToArtist(ArtistList &AL, Song s) {
     }
     
     if (currAlbum == nullptr) {
-        currAlbum = new NodeAlbum;
+        currAlbum = new elmAlbum;
         currAlbum->namaAlbum = s.album;
         currAlbum->songs = nullptr;
         currAlbum->next = nullptr;
@@ -561,7 +561,7 @@ void addSongToArtist(ArtistList &AL, Song s) {
         }
     }
     
-    addressLibrary newSong = new NodeLibrary;
+    addressLibrary newSong = new elmLibrary;
     newSong->info = s;
     newSong->next = currAlbum->songs;
     newSong->prev = nullptr;
