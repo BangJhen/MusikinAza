@@ -452,6 +452,23 @@ void deleteSongFromPlaylist(Playlist &P, int id) {
     }
 }
 
+void deletePlaylist(Playlist playlists[], int &playlistCount, int index) {
+    if (index >= 0 && index < playlistCount) {
+        addressPlaylist p = playlists[index].first;
+        while (p != nullptr) {
+            addressPlaylist temp = p;
+            p = p->next;
+            delete temp;
+        }
+        
+        for (int i = index; i < playlistCount - 1; i++) {
+            playlists[i] = playlists[i + 1];
+        }
+        playlistCount--;
+        cout << "Playlist berhasil dihapus!" << endl;
+    }
+}
+
 void createQueue(PlayQueue &Q) {
     Q.head = nullptr;
     Q.tail = nullptr;

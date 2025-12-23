@@ -154,6 +154,7 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                     cout << "3. Hapus Lagu dari Playlist" << endl;
                     cout << "4. Lihat Playlist" << endl;
                     cout << "5. Putar Lagu dari Playlist" << endl;
+                    cout << "6. Hapus Playlist" << endl;
                     cout << "0. Kembali" << endl;
                     cout << "Pilihan: ";
                     
@@ -268,6 +269,24 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                                         throw runtime_error("ID harus angka");
                                     }
                                     playFromPlaylist(playlists[idx - 1], cp, id);
+                                }
+                            }
+                        } else if (pilihanPlaylist == 6) {
+                            if (playlistCount == 0) {
+                                cout << "Belum ada playlist." << endl;
+                            } else {
+                                cout << "\nDaftar Playlist:" << endl;
+                                for (int i = 0; i < playlistCount; i++) {
+                                    cout << i + 1 << ". " << playlists[i].nama << endl;
+                                }
+                                int idx;
+                                cout << "Pilih playlist yang akan dihapus: ";
+                                cin >> idx;
+                                if (cin.fail()) {
+                                    throw runtime_error("Input harus angka");
+                                }
+                                if (idx > 0 && idx <= playlistCount) {
+                                    deletePlaylist(playlists, playlistCount, idx - 1);
                                 }
                             }
                         }

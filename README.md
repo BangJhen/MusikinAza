@@ -8,9 +8,11 @@ musikinAza adalah aplikasi manajemen dan pemutaran musik yang memungkinkan admin
 
 ## Struktur Data
 
-- **Doubly Linked List**: Digunakan untuk menyimpan library lagu, memungkinkan navigasi maju-mundur
-- **Singly Linked List**: Digunakan untuk menyimpan playlist, efisien untuk urutan pemutaran
-- **Record (Struct)**: Menyimpan data lagu (ID, judul, artis, genre, tahun)
+- **Doubly Linked List**: Library lagu dan Playlist (navigasi maju-mundur)
+- **Queue (FIFO)**: Antrian pemutaran lagu
+- **Stack (LIFO)**: Riwayat pemutaran lagu
+- **Multi-Level Linked List**: Organisasi Artis → Album → Lagu
+- **Single Linked List**: ArtistList
 
 ## Fitur
 
@@ -27,17 +29,24 @@ musikinAza adalah aplikasi manajemen dan pemutaran musik yang memungkinkan admin
   - Di playlist: mengikuti urutan playlist
   - Di library: memutar lagu mirip (prioritas artis sama > genre sama)
 - Kelola playlist:
-  - Buat playlist baru
+  - Buat playlist baru (maksimal 10)
   - Tambah lagu ke playlist
   - Hapus lagu dari playlist
   - Lihat isi playlist
   - Putar lagu dari playlist
+  - Hapus playlist
+- Antrian pemutaran (Queue)
+- Riwayat pemutaran (History)
+- Lihat artis dan album
 
 ## Cara Kompilasi
 
 ### Menggunakan Terminal
 ```bash
-g++ -std=c++11 musikinAza/main.cpp musikinAza/musikinAza.cpp -o musikinAza
+cd musikinAza
+g++ -std=c++11 -c musikinAza.cpp -o musikinAza.o
+g++ -std=c++11 -c main.cpp -o main.o
+g++ -std=c++11 main.o musikinAza.o -o musikinAza
 ./musikinAza
 ```
 
@@ -81,6 +90,7 @@ Di menu user, pilih "Kelola Playlist" untuk:
 - Menghapus lagu dari playlist
 - Melihat isi playlist
 - Memutar lagu dari playlist
+- Menghapus playlist (untuk membuat ruang bagi playlist baru)
 
 ## Contoh Penggunaan
 
@@ -118,42 +128,36 @@ Aplikasi dilengkapi dengan exception handling untuk validasi input:
 1. **Update Lagu**: Jika admin mengupdate data lagu, perubahan otomatis berlaku di semua playlist
 2. **Hapus Lagu**: Jika admin menghapus lagu, lagu tersebut otomatis terhapus dari semua playlist
 3. **Lagu Mirip**: Algoritma mencari lagu mirip memprioritaskan artis yang sama, kemudian genre yang sama
-4. **Next/Prev di Playlist**: Mengikuti urutan lagu di playlist
+4. **Next/Prev di Playlist**: Mengikuti urutan lagu di playlist (Doubly Linked List)
 5. **Next/Prev di Library**: Memutar lagu yang mirip dengan lagu saat ini
+6. **Dummy Data**: Aplikasi otomatis memuat 8 lagu dummy saat pertama kali dijalankan
 
 ## Struktur File
 
 ```
-musikinAza/
+muskinAza/
 ├── musikinAza/
 │   ├── main.cpp          # Program utama dan menu
-│   ├── musikinAza.h      # Header utama (include semua modul)
-│   ├── musikinAza.cpp    # Implementasi semua fungsi
-│   ├── song.h            # Modul: Struct Song
-│   ├── library.h         # Modul: Doubly Linked List (Library)
-│   ├── playlist.h        # Modul: Singly Linked List (Playlist)
-│   ├── player.h          # Modul: Fungsi pemutaran
-│   ├── queue.h           # Modul: Queue (Antrian)
-│   ├── history.h         # Modul: Stack (Riwayat)
-│   └── artist.h          # Modul: Multi Linked List (Artis-Album)
+│   ├── musikinAza.h      # Header tunggal (semua struct dan deklarasi)
+│   └── musikinAza.cpp    # Implementasi semua fungsi + dummy data
 └── README.md
 ```
 
-### Penjelasan Modul
+### Penjelasan File
 
-**song.h**: Definisi struct `Song` yang menyimpan data lagu (id, judul, artis, album, genre, tahun)
+**main.cpp**: Program utama dengan menu admin dan user
 
-**library.h**: Implementasi Doubly Linked List untuk library lagu dengan fungsi CRUD
+**musikinAza.h**: Header tunggal berisi semua struct (Song, Library, Playlist, Queue, History, ArtistList, CurrentPlay) dan deklarasi fungsi
 
-**playlist.h**: Implementasi Singly Linked List untuk playlist dan struct `CurrentPlay`
-
-**player.h**: Fungsi-fungsi untuk memutar, stop, next, dan prev lagu
-
-**queue.h**: Implementasi Queue (FIFO) untuk antrian pemutaran
-
-**history.h**: Implementasi Stack (LIFO) untuk riwayat pemutaran
-
-**artist.h**: Implementasi Multi Linked List untuk organisasi Artis → Album → Lagu
+**musikinAza.cpp**: Implementasi lengkap semua fungsi untuk:
+- Library (Doubly Linked List)
+- Playlist (Doubly Linked List)
+- Player (play, stop, next, prev)
+- Queue (FIFO)
+- History (Stack/LIFO)
+- ArtistList (Single Linked List)
+- Multi-Level Linked List (Artis → Album → Lagu)
+- Dummy Data (8 lagu otomatis)
 
 ## Teknologi
 
@@ -168,3 +172,5 @@ musikinAza/
 - "Memutar lagu" ditampilkan sebagai notifikasi teks
 - Data lagu tidak persisten (hilang saat aplikasi ditutup)
 - Maksimal 10 playlist dapat dibuat
+- Aplikasi memuat 8 lagu dummy otomatis saat startup
+- Playlist menggunakan Doubly Linked List untuk mendukung navigasi prev

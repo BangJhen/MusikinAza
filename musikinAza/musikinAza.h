@@ -109,6 +109,7 @@ void showPlaylist(Playlist P);
 void playFromPlaylist(Playlist P, CurrentPlay &cp, int id);
 void updateSongInPlaylist(Playlist &P, int id, Song newData);
 void deleteSongFromPlaylist(Playlist &P, int id);
+void deletePlaylist(Playlist playlists[], int &playlistCount, int index);
 
 void playSong(Library L, CurrentPlay &cp, int id);
 void stopSong(CurrentPlay &cp);
