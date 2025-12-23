@@ -8,12 +8,13 @@ typedef struct elmPlaylist* addressPlaylist;
 struct elmPlaylist {
     Song info;
     addressPlaylist next;
+    addressPlaylist prev;
 };
 
 struct Playlist {
     string nama;
-    addressPlaylist head;
-    addressPlaylist tail;
+    addressPlaylist first;
+    addressPlaylist last;
 };
 
 struct CurrentPlay {

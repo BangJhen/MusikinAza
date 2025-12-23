@@ -20,7 +20,7 @@ struct elmArtist {
 };
 
 struct ArtistList {
-    addressArtist head;
+    addressArtist first;
 };
 
 void createArtistList(ArtistList &AL);

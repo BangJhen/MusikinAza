@@ -10,4 +10,6 @@
 #include "history.h"
 #include "artist.h"
 
+void loadDummyData(Library &L, ArtistList &AL);
+
 #endif

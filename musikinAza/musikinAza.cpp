@@ -1,14 +1,14 @@
 #include "musikinAza.h"
 
 void createLibrary(Library &L) {
-    L.head = nullptr;
-    L.tail = nullptr;
+    L.first = nullptr;
+    L.last = nullptr;
 }
 
 void createPlaylist(Playlist &P, string nama) {
     P.nama = nama;
-    P.head = nullptr;
-    P.tail = nullptr;
+    P.first = nullptr;
+    P.last = nullptr;
 }
 
 addressLibrary allocateLibrary(Song s) {
@@ -23,88 +23,94 @@ addressPlaylist allocatePlaylist(Song s) {
     addressPlaylist p = new elmPlaylist;
     p->info = s;
     p->next = nullptr;
+    p->prev = nullptr;
     return p;
 }
 
 void addSong(Library &L, Song s) {
     addressLibrary p = allocateLibrary(s);
     
-    if (L.head == nullptr) {
-        L.head = p;
-        L.tail = p;
+    if (L.first == nullptr) {
+        L.first = p;
+        L.last = p;
     } else {
-        L.tail->next = p;
-        p->prev = L.tail;
-        L.tail = p;
+        L.last->next = p;
+        p->prev = L.last;
+        L.last = p;
     }
     cout << "Lagu berhasil ditambahkan!" << endl;
 }
 
 void showAllSongs(Library L) {
-    if (L.head == nullptr) {
+    if (L.first == nullptr) {
         cout << "Library kosong." << endl;
-        return;
-    }
-    
-    addressLibrary p = L.head;
-    cout << "\n=== DAFTAR LAGU ===" << endl;
-    while (p != nullptr) {
-        cout << "ID: " << p->info.id << endl;
-        cout << "Judul: " << p->info.judul << endl;
-        cout << "Artis: " << p->info.artis << endl;
-        cout << "Album: " << p->info.album << endl;
-        cout << "Genre: " << p->info.genre << endl;
-        cout << "Tahun: " << p->info.tahun << endl;
-        cout << "-------------------" << endl;
-        p = p->next;
+    } else {
+        addressLibrary p = L.first;
+        cout << "\n=== DAFTAR LAGU ===" << endl;
+        while (p != nullptr) {
+            cout << "ID: " << p->info.id << endl;
+            cout << "Judul: " << p->info.judul << endl;
+            cout << "Artis: " << p->info.artis << endl;
+            cout << "Album: " << p->info.album << endl;
+            cout << "Genre: " << p->info.genre << endl;
+            cout << "Tahun: " << p->info.tahun << endl;
+            cout << "-------------------" << endl;
+            p = p->next;
+        }
     }
 }
 
-Song* findSongById(Library L, int id) {
-    addressLibrary p = L.head;
+Song findSongById(Library L, int id) {
+    addressLibrary p = L.first;
     while (p != nullptr) {
         if (p->info.id == id) {
-            return &(p->info);
+            return p->info;
         }
         p = p->next;
     }
-    return nullptr;
+    Song notFound;
+    notFound.id = -1;
+    return notFound;
 }
 
 void updateSong(Library &L, int id, Song newData) {
-    addressLibrary p = L.head;
-    while (p != nullptr) {
+    addressLibrary p = L.first;
+    bool found = false;
+    while (p != nullptr && !found) {
         if (p->info.id == id) {
             p->info.judul = newData.judul;
             p->info.artis = newData.artis;
             p->info.genre = newData.genre;
             p->info.tahun = newData.tahun;
             cout << "Lagu berhasil diupdate!" << endl;
-            return;
+            found = true;
         }
         p = p->next;
     }
-    cout << "Lagu tidak ditemukan." << endl;
+    if (!found) {
+        cout << "Lagu tidak ditemukan." << endl;
+    }
 }
 
 void deleteSong(Library &L, int id, Playlist playlists[], int &playlistCount) {
-    addressLibrary p = L.head;
+    addressLibrary p = L.first;
+    bool found = false;
     
-    while (p != nullptr) {
+    while (p != nullptr && !found) {
         if (p->info.id == id) {
             if (p->prev == nullptr) {
-                L.head = p->next;
-                if (L.head != nullptr) {
-                    L.head->prev = nullptr;
+                L.first = p->next;
+                if (L.first != nullptr) {
+                    L.first->prev = nullptr;
                 }
             } else {
                 p->prev->next = p->next;
             }
             
             if (p->next == nullptr) {
-                L.tail = p->prev;
-                if (L.tail != nullptr) {
-                    L.tail->next = nullptr;
+                L.last = p->prev;
+                if (L.last != nullptr) {
+                    L.last->next = nullptr;
                 }
             } else {
                 p->next->prev = p->prev;
@@ -116,11 +122,14 @@ void deleteSong(Library &L, int id, Playlist playlists[], int &playlistCount) {
             
             delete p;
             cout << "Lagu berhasil dihapus dari library dan semua playlist!" << endl;
-            return;
+            found = true;
+        } else {
+            p = p->next;
         }
-        p = p->next;
     }
-    cout << "Lagu tidak ditemukan." << endl;
+    if (!found) {
+        cout << "Lagu tidak ditemukan." << endl;
+    }
 }
 
 void searchSong(Library L) {
@@ -138,7 +147,7 @@ void searchSong(Library L) {
         }
         cin.ignore();
         
-        addressLibrary p = L.head;
+        addressLibrary p = L.first;
         bool found = false;
         
         if (pilihan == 1) {
@@ -211,13 +220,13 @@ void searchSong(Library L) {
 }
 
 void playSong(Library L, CurrentPlay &cp, int id) {
-    Song* s = findSongById(L, id);
-    if (s != nullptr) {
-        cp.info = *s;
+    Song s = findSongById(L, id);
+    if (s.id != -1) {
+        cp.info = s;
         cp.isPlaying = true;
         cp.fromPlaylist = false;
         cp.currentPlaylistelm = nullptr;
-        cout << "\nSekarang memutar: " << s->judul << " - " << s->artis << endl;
+        cout << "\nSekarang memutar: " << s.judul << " - " << s.artis << endl;
     } else {
         cout << "Lagu tidak ditemukan." << endl;
     }
@@ -232,8 +241,8 @@ void stopSong(CurrentPlay &cp) {
     }
 }
 
-Song* findSimilarSong(Library L, Song current) {
-    addressLibrary p = L.head;
+Song findSimilarSong(Library L, Song current) {
+    addressLibrary p = L.first;
     addressLibrary sameArtist = nullptr;
     addressLibrary sameGenre = nullptr;
     
@@ -250,20 +259,19 @@ Song* findSimilarSong(Library L, Song current) {
     }
     
     if (sameArtist != nullptr) {
-        return &(sameArtist->info);
+        return sameArtist->info;
     } else if (sameGenre != nullptr) {
-        return &(sameGenre->info);
+        return sameGenre->info;
     }
-    return nullptr;
+    Song notFound;
+    notFound.id = -1;
+    return notFound;
 }
 
 void nextSong(Library L, CurrentPlay &cp) {
     if (!cp.isPlaying) {
         cout << "Tidak ada lagu yang sedang diputar." << endl;
-        return;
-    }
-    
-    if (cp.fromPlaylist && cp.currentPlaylistelm != nullptr) {
+    } else if (cp.fromPlaylist && cp.currentPlaylistelm != nullptr) {
         if (cp.currentPlaylistelm->next != nullptr) {
             cp.currentPlaylistelm = cp.currentPlaylistelm->next;
             cp.info = cp.currentPlaylistelm->info;
@@ -272,9 +280,9 @@ void nextSong(Library L, CurrentPlay &cp) {
             cout << "Sudah di akhir playlist." << endl;
         }
     } else {
-        Song* similar = findSimilarSong(L, cp.info);
-        if (similar != nullptr) {
-            cp.info = *similar;
+        Song similar = findSimilarSong(L, cp.info);
+        if (similar.id != -1) {
+            cp.info = similar;
             cout << "\nNext (lagu mirip): " << cp.info.judul << " - " << cp.info.artis << endl;
         } else {
             cout << "Tidak ada lagu mirip yang ditemukan." << endl;
@@ -285,15 +293,18 @@ void nextSong(Library L, CurrentPlay &cp) {
 void prevSong(Library L, CurrentPlay &cp) {
     if (!cp.isPlaying) {
         cout << "Tidak ada lagu yang sedang diputar." << endl;
-        return;
-    }
-    
-    if (cp.fromPlaylist && cp.currentPlaylistelm != nullptr) {
-        cout << "Fitur prev di playlist tidak tersedia (singly linked list)." << endl;
+    } else if (cp.fromPlaylist && cp.currentPlaylistelm != nullptr) {
+        if (cp.currentPlaylistelm->prev != nullptr) {
+            cp.currentPlaylistelm = cp.currentPlaylistelm->prev;
+            cp.info = cp.currentPlaylistelm->info;
+            cout << "\nPrev: " << cp.info.judul << " - " << cp.info.artis << endl;
+        } else {
+            cout << "Sudah di awal playlist." << endl;
+        }
     } else {
-        Song* similar = findSimilarSong(L, cp.info);
-        if (similar != nullptr) {
-            cp.info = *similar;
+        Song similar = findSimilarSong(L, cp.info);
+        if (similar.id != -1) {
+            cp.info = similar;
             cout << "\nPrev (lagu mirip): " << cp.info.judul << " - " << cp.info.artis << endl;
         } else {
             cout << "Tidak ada lagu mirip yang ditemukan." << endl;
@@ -304,123 +315,140 @@ void prevSong(Library L, CurrentPlay &cp) {
 void addToPlaylist(Playlist &P, Song s) {
     addressPlaylist p = allocatePlaylist(s);
     
-    if (P.head == nullptr) {
-        P.head = p;
-        P.tail = p;
+    if (P.first == nullptr) {
+        P.first = p;
+        P.last = p;
     } else {
-        P.tail->next = p;
-        P.tail = p;
+        P.last->next = p;
+        p->prev = P.last;
+        P.last = p;
     }
     cout << "Lagu ditambahkan ke playlist!" << endl;
 }
 
 void removeFromPlaylist(Playlist &P, int id) {
-    if (P.head == nullptr) {
+    if (P.first == nullptr) {
         cout << "Playlist kosong." << endl;
-        return;
-    }
-    
-    addressPlaylist p = P.head;
-    addressPlaylist prev = nullptr;
-    
-    while (p != nullptr) {
-        if (p->info.id == id) {
-            if (prev == nullptr) {
-                P.head = p->next;
-                if (P.head == nullptr) {
-                    P.tail = nullptr;
+    } else {
+        addressPlaylist p = P.first;
+        bool found = false;
+        
+        while (p != nullptr && !found) {
+            if (p->info.id == id) {
+                if (p->prev == nullptr) {
+                    P.first = p->next;
+                    if (P.first != nullptr) {
+                        P.first->prev = nullptr;
+                    }
+                } else {
+                    p->prev->next = p->next;
                 }
-            } else {
-                prev->next = p->next;
+                
                 if (p->next == nullptr) {
-                    P.tail = prev;
+                    P.last = p->prev;
+                    if (P.last != nullptr) {
+                        P.last->next = nullptr;
+                    }
+                } else {
+                    p->next->prev = p->prev;
                 }
+                
+                delete p;
+                cout << "Lagu dihapus dari playlist!" << endl;
+                found = true;
+            } else {
+                p = p->next;
             }
-            delete p;
-            cout << "Lagu dihapus dari playlist!" << endl;
-            return;
         }
-        prev = p;
-        p = p->next;
+        if (!found) {
+            cout << "Lagu tidak ditemukan di playlist." << endl;
+        }
     }
-    cout << "Lagu tidak ditemukan di playlist." << endl;
 }
 
 void showPlaylist(Playlist P) {
-    if (P.head == nullptr) {
+    if (P.first == nullptr) {
         cout << "Playlist kosong." << endl;
-        return;
-    }
-    
-    addressPlaylist p = P.head;
-    cout << "\n=== PLAYLIST: " << P.nama << " ===" << endl;
-    while (p != nullptr) {
-        cout << "ID: " << p->info.id << endl;
-        cout << "Judul: " << p->info.judul << endl;
-        cout << "Artis: " << p->info.artis << endl;
-        cout << "Genre: " << p->info.genre << endl;
-        cout << "Tahun: " << p->info.tahun << endl;
-        cout << "-------------------" << endl;
-        p = p->next;
+    } else {
+        addressPlaylist p = P.first;
+        cout << "\n=== PLAYLIST: " << P.nama << " ===" << endl;
+        while (p != nullptr) {
+            cout << "ID: " << p->info.id << endl;
+            cout << "Judul: " << p->info.judul << endl;
+            cout << "Artis: " << p->info.artis << endl;
+            cout << "Genre: " << p->info.genre << endl;
+            cout << "Tahun: " << p->info.tahun << endl;
+            cout << "-------------------" << endl;
+            p = p->next;
+        }
     }
 }
 
 void playFromPlaylist(Playlist P, CurrentPlay &cp, int id) {
-    addressPlaylist p = P.head;
-    while (p != nullptr) {
+    addressPlaylist p = P.first;
+    bool found = false;
+    while (p != nullptr && !found) {
         if (p->info.id == id) {
             cp.info = p->info;
             cp.isPlaying = true;
             cp.fromPlaylist = true;
             cp.currentPlaylistelm = p;
             cout << "\nSekarang memutar dari playlist: " << p->info.judul << " - " << p->info.artis << endl;
-            return;
+            found = true;
         }
         p = p->next;
     }
-    cout << "Lagu tidak ditemukan di playlist." << endl;
+    if (!found) {
+        cout << "Lagu tidak ditemukan di playlist." << endl;
+    }
 }
 
 void updateSongInPlaylist(Playlist &P, int id, Song newData) {
-    addressPlaylist p = P.head;
-    while (p != nullptr) {
+    addressPlaylist p = P.first;
+    bool found = false;
+    while (p != nullptr && !found) {
         if (p->info.id == id) {
             p->info.judul = newData.judul;
             p->info.artis = newData.artis;
             p->info.genre = newData.genre;
             p->info.tahun = newData.tahun;
-            return;
+            found = true;
         }
         p = p->next;
     }
 }
 
 void deleteSongFromPlaylist(Playlist &P, int id) {
-    if (P.head == nullptr) {
-        return;
-    }
-    
-    addressPlaylist p = P.head;
-    addressPlaylist prev = nullptr;
-    
-    while (p != nullptr) {
-        if (p->info.id == id) {
-            if (prev == nullptr) {
-                P.head = p->next;
-                if (P.head == nullptr) {
-                    P.tail = nullptr;
+    if (P.first != nullptr) {
+        addressPlaylist p = P.first;
+        bool found = false;
+        
+        while (p != nullptr && !found) {
+            if (p->info.id == id) {
+                if (p->prev == nullptr) {
+                    P.first = p->next;
+                    if (P.first != nullptr) {
+                        P.first->prev = nullptr;
+                    }
+                } else {
+                    p->prev->next = p->next;
                 }
-            } else {
-                prev->next = p->next;
+                
                 if (p->next == nullptr) {
-                    P.tail = prev;
+                    P.last = p->prev;
+                    if (P.last != nullptr) {
+                        P.last->next = nullptr;
+                    }
+                } else {
+                    p->next->prev = p->prev;
                 }
+                
+                delete p;
+                found = true;
+            } else {
+                p = p->next;
             }
-            delete p;
-            return;
         }
-        prev = p;
-        p = p->next;
     }
 }
 
@@ -459,15 +487,14 @@ void dequeueSong(PlayQueue &Q, Song &s) {
 void showQueue(PlayQueue Q) {
     if (Q.head == nullptr) {
         cout << "Antrian kosong." << endl;
-        return;
-    }
-    
-    addressQueue p = Q.head;
-    int no = 1;
-    cout << "\n=== ANTRIAN PEMUTARAN ===" << endl;
-    while (p != nullptr) {
-        cout << no++ << ". " << p->info.judul << " - " << p->info.artis << endl;
-        p = p->next;
+    } else {
+        addressQueue p = Q.head;
+        int no = 1;
+        cout << "\n=== ANTRIAN PEMUTARAN ===" << endl;
+        while (p != nullptr) {
+            cout << no++ << ". " << p->info.judul << " - " << p->info.artis << endl;
+            p = p->next;
+        }
     }
 }
 
@@ -498,15 +525,14 @@ void popHistory(History &H, Song &s) {
 void showHistory(History H) {
     if (H.top == nullptr) {
         cout << "Riwayat kosong." << endl;
-        return;
-    }
-    
-    addressHistory p = H.top;
-    int no = 1;
-    cout << "\n=== RIWAYAT PEMUTARAN ===" << endl;
-    while (p != nullptr && no <= 10) {
-        cout << no++ << ". " << p->info.judul << " - " << p->info.artis << endl;
-        p = p->next;
+    } else {
+        addressHistory p = H.top;
+        int no = 1;
+        cout << "\n=== RIWAYAT PEMUTARAN ===" << endl;
+        while (p != nullptr && no <= 10) {
+            cout << no++ << ". " << p->info.judul << " - " << p->info.artis << endl;
+            p = p->next;
+        }
     }
 }
 
@@ -515,11 +541,11 @@ bool isHistoryEmpty(History H) {
 }
 
 void createArtistList(ArtistList &AL) {
-    AL.head = nullptr;
+    AL.first = nullptr;
 }
 
 void addSongToArtist(ArtistList &AL, Song s) {
-    addressArtist currArtist = AL.head;
+    addressArtist currArtist = AL.first;
     addressArtist prevArtist = nullptr;
     
     while (currArtist != nullptr && currArtist->namaArtis != s.artis) {
@@ -533,8 +559,8 @@ void addSongToArtist(ArtistList &AL, Song s) {
         currArtist->albums = nullptr;
         currArtist->next = nullptr;
         
-        if (AL.head == nullptr) {
-            AL.head = currArtist;
+        if (AL.first == nullptr) {
+            AL.first = currArtist;
         } else {
             prevArtist->next = currArtist;
         }
@@ -572,21 +598,20 @@ void addSongToArtist(ArtistList &AL, Song s) {
 }
 
 void showAllArtists(ArtistList AL) {
-    if (AL.head == nullptr) {
+    if (AL.first == nullptr) {
         cout << "Belum ada artis." << endl;
-        return;
-    }
-    
-    addressArtist p = AL.head;
-    cout << "\n=== DAFTAR ARTIS ===" << endl;
-    while (p != nullptr) {
-        cout << "- " << p->namaArtis << endl;
-        p = p->next;
+    } else {
+        addressArtist p = AL.first;
+        cout << "\n=== DAFTAR ARTIS ===" << endl;
+        while (p != nullptr) {
+            cout << "- " << p->namaArtis << endl;
+            p = p->next;
+        }
     }
 }
 
 void showArtistAlbums(ArtistList AL, string namaArtis) {
-    addressArtist p = AL.head;
+    addressArtist p = AL.first;
     
     while (p != nullptr && p->namaArtis != namaArtis) {
         p = p->next;
@@ -594,24 +619,20 @@ void showArtistAlbums(ArtistList AL, string namaArtis) {
     
     if (p == nullptr) {
         cout << "Artis tidak ditemukan." << endl;
-        return;
-    }
-    
-    if (p->albums == nullptr) {
+    } else if (p->albums == nullptr) {
         cout << "Artis belum memiliki album." << endl;
-        return;
-    }
-    
-    addressAlbum album = p->albums;
-    cout << "\n=== ALBUM " << namaArtis << " ===" << endl;
-    while (album != nullptr) {
-        cout << "- " << album->namaAlbum << endl;
-        album = album->next;
+    } else {
+        addressAlbum album = p->albums;
+        cout << "\n=== ALBUM " << namaArtis << " ===" << endl;
+        while (album != nullptr) {
+            cout << "- " << album->namaAlbum << endl;
+            album = album->next;
+        }
     }
 }
 
 void showAlbumSongs(ArtistList AL, string namaArtis, string namaAlbum) {
-    addressArtist artist = AL.head;
+    addressArtist artist = AL.first;
     
     while (artist != nullptr && artist->namaArtis != namaArtis) {
         artist = artist->next;
@@ -619,28 +640,23 @@ void showAlbumSongs(ArtistList AL, string namaArtis, string namaAlbum) {
     
     if (artist == nullptr) {
         cout << "Artis tidak ditemukan." << endl;
-        return;
-    }
-    
-    addressAlbum album = artist->albums;
-    while (album != nullptr && album->namaAlbum != namaAlbum) {
-        album = album->next;
-    }
-    
-    if (album == nullptr) {
-        cout << "Album tidak ditemukan." << endl;
-        return;
-    }
-    
-    if (album->songs == nullptr) {
-        cout << "Album belum memiliki lagu." << endl;
-        return;
-    }
-    
-    addressLibrary song = album->songs;
-    cout << "\n=== LAGU DI ALBUM " << namaAlbum << " ===" << endl;
-    while (song != nullptr) {
-        cout << "ID: " << song->info.id << " - " << song->info.judul << endl;
-        song = song->next;
+    } else {
+        addressAlbum album = artist->albums;
+        while (album != nullptr && album->namaAlbum != namaAlbum) {
+            album = album->next;
+        }
+        
+        if (album == nullptr) {
+            cout << "Album tidak ditemukan." << endl;
+        } else if (album->songs == nullptr) {
+            cout << "Album belum memiliki lagu." << endl;
+        } else {
+            addressLibrary song = album->songs;
+            cout << "\n=== LAGU DI ALBUM " << namaAlbum << " ===" << endl;
+            while (song != nullptr) {
+                cout << "ID: " << song->info.id << " - " << song->info.judul << endl;
+                song = song->next;
+            }
+        }
     }
 }

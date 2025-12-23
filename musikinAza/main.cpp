@@ -55,8 +55,8 @@ void menuAdmin(Library &L, Playlist playlists[], int &playlistCount, ArtistList 
                 }
                 cin.ignore();
                 
-                Song* existing = findSongById(L, id);
-                if (existing != nullptr) {
+                Song existing = findSongById(L, id);
+                if (existing.id != -1) {
                     Song newData;
                     newData.id = id;
                     cout << "Judul baru: ";
@@ -196,9 +196,9 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                                     if (cin.fail()) {
                                         throw runtime_error("ID harus angka");
                                     }
-                                    Song* s = findSongById(L, id);
-                                    if (s != nullptr) {
-                                        addToPlaylist(playlists[idx - 1], *s);
+                                    Song s = findSongById(L, id);
+                                    if (s.id != -1) {
+                                        addToPlaylist(playlists[idx - 1], s);
                                     } else {
                                         cout << "Lagu tidak ditemukan." << endl;
                                     }
@@ -301,9 +301,9 @@ void menuUser(Library &L, Playlist playlists[], int &playlistCount, CurrentPlay 
                             if (cin.fail()) {
                                 throw runtime_error("ID harus angka");
                             }
-                            Song* s = findSongById(L, id);
-                            if (s != nullptr) {
-                                enqueueSong(Q, *s);
+                            Song s = findSongById(L, id);
+                            if (s.id != -1) {
+                                enqueueSong(Q, s);
                             } else {
                                 cout << "Lagu tidak ditemukan." << endl;
                             }
@@ -452,6 +452,8 @@ int main() {
     createQueue(playQueue);
     createHistory(history);
     createArtistList(artistList);
+    
+    loadDummyData(library, artistList);
     
     int pilihan;
     do {
